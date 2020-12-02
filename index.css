@@ -1,0 +1,23 @@
+#grid {
+    border:5px grey solid;
+    background-color: lightgrey;
+    padding: 1px;
+    display: inline-block;
+}
+
+.cell {
+    width: 5vw;
+    height: 5vw;
+    border-radius: 50%;
+    border: 3px grey solid;
+    background-color: white;
+    margin:0.5vw;
+}
+
+.red {
+    background-color: red;
+}
+
+.blue {
+    background-color: blue;
+}
