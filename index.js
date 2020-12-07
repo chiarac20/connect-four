@@ -1,13 +1,16 @@
 const NUM_OF_ROWS=6;
 const NUM_OF_COLS=7;
 const gridDom=document.getElementById('grid');
-createCells()
-const cellsDom=[...document.getElementsByClassName("cell")];
+init()
+const cellsDom=[...document.querySelectorAll('[data-cell]')];
 const PLAYERS_COLOURS = ['red', 'blue'];
 let usedCells = 0;
 const USED_CELL='used-cell';
+let winner=null;
 
-function createCells (){
+function init(){
+    const grid=document.getElementById('grid');
+    grid.innerText='';
     for (let rowNum=0; rowNum<NUM_OF_ROWS; rowNum++) {
         const divDom=document.createElement('div');
         gridDom.appendChild(divDom);
@@ -16,7 +19,7 @@ function createCells (){
         for (let colNum=0; colNum<NUM_OF_COLS; colNum++) {
             const cellDom=document.createElement('button');
             divDom.appendChild(cellDom);
-            cellDom.classList.add('cell');
+            cellDom.dataset.cell=('cell')
             cellDom.dataset.column=colNum;
             cellDom.dataset.row=rowNum;
         }
@@ -25,9 +28,19 @@ function createCells (){
 
 cellsDom.forEach(cell=>{
     cell.addEventListener('click', ()=>{
+        if (winner) {
+            return;
+        }
         const columnClickedCell=cell.dataset.column;
         const cellToColour=identifyCellToColour(columnClickedCell); 
-        const colour=colourCell(cellToColour);
+        const winningCells=colourCell(cellToColour);
+        if(winningCells) {
+            winner=winningCells[0].classList;
+            setTimeout((()=>{
+                alert('The winner is '+ winner)
+                init()
+            }), 500)
+        }
     })
 })
 
@@ -45,9 +58,10 @@ function colourCell(cellDom){
     const playerId = usedCells%PLAYERS_COLOURS.length;
     cellDom.classList.add(PLAYERS_COLOURS[playerId]);
     usedCells++; 
+    const diagonalCells=getDiagonalCells(cellDom)
     return checkVerticalCells(cellDom, PLAYERS_COLOURS[playerId]) ||
-        checkHorizontalCells(cellDom, PLAYERS_COLOURS[playerId]);
-    // checkDiagonalCells(cellDom, PLAYERS_COLOURS[playerId]);
+        checkHorizontalCells(cellDom, PLAYERS_COLOURS[playerId]) ||
+        checkDiagonalCells(diagonalCells, PLAYERS_COLOURS[playerId])
 }
 
 function checkStatus (element, status) {
@@ -93,11 +107,43 @@ function checkColouredCells(cells, colour){
     })
 }
 
-function checkDiagonalCells(cell, colour) {
+function getDiagonalCells (cell) {
     const column= +cell.dataset.column;
     const row=+cell.dataset.row;
-    const cellsDiagonal=document.querySelector(`.${colour}[data-row="${row-1}"][data-column="${column+1}"]`);
-    console.log(cellsDiagonal)
+    return [
+        //1Up2DownRight
+        [getCell(row, column), getCell(row+1, column+1), getCell(row+2, column+2), getCell(row-1, column-1)],
+        //1Up2DownLeft
+        [getCell(row, column), getCell(row+1, column-1), getCell(row+2, column-2), getCell(row-1, column+1)],
+        //downRigth
+        [getCell(row, column), getCell(row+1, column+1), getCell(row+2, column+2), getCell(row+3, column+3)],
+        //downLeft
+        [getCell(row, column), getCell(row+1, column-1), getCell(row+2, column-2), getCell(row+3, column-3)],
+        //2Up1DownRight
+        [getCell(row, column), getCell(row+1, column-1), getCell(row-1, column+1), getCell(row-2, column+2)],
+        //2Up1DownLeft
+        [getCell(row, column), getCell(row+1, column+1), getCell(row-1, column-1), getCell(row-2, column-2)],
+        //upRight
+        [getCell(row, column), getCell(row-1, column+1), getCell(row-2, column+2), getCell(row-3, column+3)],
+        //upLeft
+        [getCell(row, column), getCell(row-1, column-1), getCell(row-2, column-2), getCell(row-3, column-3)]
+    ]
+}
+
+function checkDiagonalCells(cells, colour) {
+    const oneUpTwoDownRight=cells[0];
+    const oneUpTwoDownLeft=cells[1];
+    const DownRight=cells[2];
+    const DownLeft=cells[3];
+    const twoUpOneDownRight=cells[4];
+    const twoUpOneDownLeft=cells[5];
+    const upRight=cells[6];
+    const upLeft=cells[7];
+    const winnerCombination=[oneUpTwoDownRight, oneUpTwoDownLeft, DownRight, DownLeft, twoUpOneDownRight,
+    twoUpOneDownLeft, upRight, upLeft].find((element)=>{
+        return checkColouredCells(element, colour);
+    })
+    return winnerCombination;
 }
 
 
