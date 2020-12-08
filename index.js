@@ -1,16 +1,19 @@
 const NUM_OF_ROWS=6;
 const NUM_OF_COLS=7;
 const gridDom=document.getElementById('grid');
-init()
-const cellsDom=[...document.querySelectorAll('[data-cell]')];
 const PLAYERS_COLOURS = ['red', 'blue'];
 let usedCells = 0;
 const USED_CELL='used-cell';
-let winner=null;
+init();
 
-function init(){
+function init() {
     const grid=document.getElementById('grid');
     grid.innerText='';
+    createCells();
+    winner=null;
+}
+
+function createCells(){
     for (let rowNum=0; rowNum<NUM_OF_ROWS; rowNum++) {
         const divDom=document.createElement('div');
         gridDom.appendChild(divDom);
@@ -22,27 +25,31 @@ function init(){
             cellDom.dataset.cell=('cell')
             cellDom.dataset.column=colNum;
             cellDom.dataset.row=rowNum;
+            cellDom.addEventListener('click', ()=>{
+                checkWinner(cellDom);
+            })
         }
     }
 } 
 
-cellsDom.forEach(cell=>{
-    cell.addEventListener('click', ()=>{
-        if (winner) {
-            return;
-        }
-        const columnClickedCell=cell.dataset.column;
-        const cellToColour=identifyCellToColour(columnClickedCell); 
-        const winningCells=colourCell(cellToColour);
-        if(winningCells) {
-            winner=winningCells[0].classList;
-            setTimeout((()=>{
-                alert('The winner is '+ winner)
-                init()
-            }), 500)
-        }
-    })
-})
+function checkWinner (cell) {
+    if (winner) {
+        return;
+    }
+    const columnClickedCell=cell.dataset.column;
+    const cellToColour=identifyCellToColour(columnClickedCell); 
+    const winningCells=colourCell(cellToColour);
+    if (winningCells) {
+        winner=winningCells[0].dataset.colour;
+        winningCells.forEach(winningCell=>{
+            winningCell.classList.add('winning-cell');
+        })
+        setTimeout((()=>{
+            alert('The winner is '+ winner)
+            init()
+        }), 0)
+    }   
+}
 
 function identifyCellToColour (colNum){
     const cells=[...document.querySelectorAll('[data-column="'+colNum+'"][data-row]')].reverse();
@@ -56,7 +63,7 @@ function colourCell(cellDom){
         return;
     }
     const playerId = usedCells%PLAYERS_COLOURS.length;
-    cellDom.classList.add(PLAYERS_COLOURS[playerId]);
+    cellDom.dataset.colour=PLAYERS_COLOURS[playerId];
     usedCells++; 
     const diagonalCells=getDiagonalCells(cellDom)
     return checkVerticalCells(cellDom, PLAYERS_COLOURS[playerId]) ||
@@ -65,7 +72,7 @@ function colourCell(cellDom){
 }
 
 function checkStatus (element, status) {
-    return !status.some(colour=>element.classList.contains(colour));
+    return !status.some(colour=>element.dataset.colour===colour);
 }
 
 function checkVerticalCells(cell, colour) {
@@ -102,7 +109,7 @@ function getCell(row, column) {
 function checkColouredCells(cells, colour){
     return cells.every (cell=>{
         if(cell!==null) {
-            return cell.classList.contains(colour);
+            return cell.dataset.colour===colour;
         }  
     })
 }
