@@ -78,7 +78,7 @@ function checkStatus (element, status) {
 function checkVerticalCells(cell, colour) {
     const column= +cell.dataset.column;
     const row=+cell.dataset.row;
-    const cellsSameCol=[...document.querySelectorAll(`.${colour}[data-column="${column}"]`)];
+    const cellsSameCol=[...document.querySelectorAll(`[data-colour="${colour}"][data-column="${column}"]`)];
     const winningCells= cellsSameCol.filter(cell=>{
         return cell.dataset.row<=row+3;
     });
@@ -94,7 +94,7 @@ function checkHorizontalCells(cell, colour){
     const cells2Right1Left=getHorizontalCells(row, column-1);
     const winnerCombination=[cellsRightSide, cellsLeftSide, cells1Right2Left, cells2Right1Left].find((element)=>{
         return checkColouredCells(element, colour);
-    })
+    });
     return winnerCombination;
 }
 
@@ -108,49 +108,37 @@ function getCell(row, column) {
 
 function checkColouredCells(cells, colour){
     return cells.every (cell=>{
-        if(cell!==null) {
-            return cell.dataset.colour===colour;
-        }  
+        return cell && cell.dataset.colour === colour;
     })
 }
 
 function getDiagonalCells (cell) {
     const column= +cell.dataset.column;
     const row=+cell.dataset.row;
+    const lastFilledCell = getCell(row, column);
     return [
         //1Up2DownRight
-        [getCell(row, column), getCell(row+1, column+1), getCell(row+2, column+2), getCell(row-1, column-1)],
+        [lastFilledCell, getCell(row+1, column+1), getCell(row+2, column+2), getCell(row-1, column-1)],
         //1Up2DownLeft
-        [getCell(row, column), getCell(row+1, column-1), getCell(row+2, column-2), getCell(row-1, column+1)],
+        [lastFilledCell, getCell(row+1, column-1), getCell(row+2, column-2), getCell(row-1, column+1)],
         //downRigth
-        [getCell(row, column), getCell(row+1, column+1), getCell(row+2, column+2), getCell(row+3, column+3)],
+        [lastFilledCell, getCell(row+1, column+1), getCell(row+2, column+2), getCell(row+3, column+3)],
         //downLeft
-        [getCell(row, column), getCell(row+1, column-1), getCell(row+2, column-2), getCell(row+3, column-3)],
+        [lastFilledCell, getCell(row+1, column-1), getCell(row+2, column-2), getCell(row+3, column-3)],
         //2Up1DownRight
-        [getCell(row, column), getCell(row+1, column-1), getCell(row-1, column+1), getCell(row-2, column+2)],
+        [lastFilledCell, getCell(row+1, column-1), getCell(row-1, column+1), getCell(row-2, column+2)],
         //2Up1DownLeft
-        [getCell(row, column), getCell(row+1, column+1), getCell(row-1, column-1), getCell(row-2, column-2)],
+        [lastFilledCell, getCell(row+1, column+1), getCell(row-1, column-1), getCell(row-2, column-2)],
         //upRight
-        [getCell(row, column), getCell(row-1, column+1), getCell(row-2, column+2), getCell(row-3, column+3)],
+        [lastFilledCell, getCell(row-1, column+1), getCell(row-2, column+2), getCell(row-3, column+3)],
         //upLeft
-        [getCell(row, column), getCell(row-1, column-1), getCell(row-2, column-2), getCell(row-3, column-3)]
+        [lastFilledCell, getCell(row-1, column-1), getCell(row-2, column-2), getCell(row-3, column-3)]
     ]
 }
 
 function checkDiagonalCells(cells, colour) {
-    const oneUpTwoDownRight=cells[0];
-    const oneUpTwoDownLeft=cells[1];
-    const DownRight=cells[2];
-    const DownLeft=cells[3];
-    const twoUpOneDownRight=cells[4];
-    const twoUpOneDownLeft=cells[5];
-    const upRight=cells[6];
-    const upLeft=cells[7];
-    const winnerCombination=[oneUpTwoDownRight, oneUpTwoDownLeft, DownRight, DownLeft, twoUpOneDownRight,
-    twoUpOneDownLeft, upRight, upLeft].find((element)=>{
-        return checkColouredCells(element, colour);
-    })
-    return winnerCombination;
+    return cells
+        .find((element)=>checkColouredCells(element, colour));
 }
 
 
